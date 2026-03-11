@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<!-- saved from url=(0062)file:///C:/Travail/SMT%20Group/Trading_setup/audit_smt_v2.html -->
+<html lang="fr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMT Sentinel - Audit CEO Edition v6.0</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #f59e0b;
+            --success: #10b981;
+            --danger: #f43f5e;
+            --text: #f8fafc;
+            --border: #334155;
+            --input-bg: #0f172a;
+            --table-header: #2d3748;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        #app-container {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        header { text-align: center; margin-bottom: 2rem; }
+        header h1 { color: var(--primary); font-size: 1.5rem; text-transform: uppercase; margin: 0; }
+
+        .progress-bar { height: 6px; background: var(--border); border-radius: 3px; margin-bottom: 2rem; overflow: hidden; }
+        #progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.4s; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .question { font-size: 1.1rem; margin-bottom: 1rem; font-weight: 500; }
+        .btn-group { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+
+        button {
+            flex: 1;
+            padding: 0.8rem;
+            border: 2px solid transparent;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            background: #2d3748;
+            color: white;
+        }
+
+        .btn-yes.selected { background: var(--success); border-color: white; }
+        .btn-no.selected { background: var(--danger); border-color: white; }
+        
+        .btn-main { background: var(--primary); color: black; width: 100%; margin-top: 1rem; }
+        .btn-main:hover { filter: brightness(1.1); }
+        .btn-secondary { background: #3b82f6; color: white; width: 100%; margin-top: 10px; }
+        .btn-secondary:hover { background: #2563eb; }
+        .btn-dark { background: #475569; color: white; width: 100%; margin-top: 10px; }
+        .btn-dark:hover { background: #334155; }
+
+        input, select {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            background: var(--input-bg);
+            color: white;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        .row-inputs { display: flex; gap: 10px; }
+        .row-inputs > * { flex: 1; }
+
+        #risk-display {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: -10px;
+            margin-bottom: 15px;
+            text-align: right;
+            min-height: 18px;
+        }
+
+        #result { text-align: center; }
+        .stars { font-size: 2.5rem; color: var(--primary); margin: 1rem 0; text-align: center;}
+        .verdict-box { padding: 1.5rem; border-radius: 0.5rem; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); margin-bottom: 1rem;}
+        
+        .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .data-box { background: var(--input-bg); padding: 10px; border-radius: 5px; text-align: center; font-size: 0.9rem;}
+        .data-box span { display: block; font-weight: bold; color: var(--primary); font-size: 1.1rem;}
+        
+        .risk-alert { font-size: 0.9rem; padding: 10px; background: rgba(245, 158, 11, 0.2); border-left: 4px solid var(--primary); margin-top: 15px; text-align: left; }
+
+        /* BLACK BOX STYLES */
+        #history-container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+            display: none; 
+        }
+        #history-container h2 {
+            color: var(--text);
+            font-size: 1.2rem;
+            margin-top: 0;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+        
+        /* DASHBOARD STATS */
+        .stats-board {
+            display: flex;
+            justify-content: space-around;
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: 0.5rem;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+        }
+        .stat-item { text-align: center; }
+        .stat-label { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+        .stat-value.win { color: var(--success); }
+        .stat-value.loss { color: var(--danger); }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        th, td {
+            padding: 10px 5px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        th { background-color: var(--table-header); color: var(--primary); }
+        .buy-txt { color: var(--success); font-weight: bold; }
+        .sell-txt { color: var(--danger); font-weight: bold; }
+        
+        /* ACTIONS BUTTONS */
+        .action-btns { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap;}
+        .btn-sm { padding: 4px 8px; font-size: 0.75rem; border-radius: 3px; cursor: pointer; border: none; font-weight: bold; }
+        .btn-tp { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); }
+        .btn-sl { background: rgba(244, 63, 94, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+        .btn-be { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; border: 1px solid #94a3b8; }
+        .btn-tp:hover { background: var(--success); color: white; }
+        .btn-sl:hover { background: var(--danger); color: white; }
+        .btn-be:hover { background: #94a3b8; color: white; }
+
+        #clear-history-btn {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            margin-top: 15px;
+            padding: 5px 10px;
+            width: auto;
+            font-size: 0.8rem;
+        }
+        #clear-history-btn:hover { background: var(--danger); color: white; }
+
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <header>
+        <h1>SMT Sentinel v6.0</h1>
+        <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 5px;">AUDIT &amp; RISK MANAGEMENT CEO</p>
+    </header>
+
+    <div class="progress-bar"><div id="progress-fill"></div></div>
+
+    <div class="step active" id="stepInit">
+        <p class="question">Capital &amp; Risque</p>
+        <div class="row-inputs">
+            <input type="number" id="tradeCapital" placeholder="Capital (€) ex: 3000" step="any" oninput="updateRiskDisplay()">
+            <input type="number" id="tradeRisk" placeholder="Risque (%) ex: 1" step="any" value="1" oninput="updateRiskDisplay()">
+        </div>
+        <div id="risk-display"></div>
+
+        <p class="question">Paramètres du Trade</p>
+        <select id="tradeAsset">
+            <option value="" disabled="" selected="">Choisir l'Actif...</option>
+            <option value="EURUSD">EUR/USD</option>
+            <option value="GBPUSD">GBP/USD</option>
+            <option value="USDJPY">USD/JPY</option>
+            <option value="AUDUSD">AUD/USD</option>
+            <option value="USDCAD">USD/CAD</option>
+            <option value="XAUUSD">XAU/USD (Or)</option>
+        </select>
+
+        <select id="tradeDirection">
+            <option value="" disabled="" selected="">Sens du Trade...</option>
+            <option value="buy">ACHAT (Buy)</option>
+            <option value="sell">VENTE (Sell)</option>
+        </select>
+
+        <div class="row-inputs">
+            <input type="number" id="tradePE" placeholder="Entrée (PE)" step="any">
+            <input type="number" id="tradeSL" placeholder="Stop Loss (SL)" step="any">
+        </div>
+        
+        <select id="tradeRR">
+            <option value="2" selected="">Objectif Ratio 1:2 (Standard)</option>
+            <option value="1">Ratio 1:1 (Sécurisation)</option>
+            <option value="3">Ratio 1:3 (Agressif)</option>
+        </select>
+
+        <button class="btn-main" onclick="startAudit()">DÉMARRER L'AUDIT</button>
+    </div>
+
+    <div class="step" id="step1">
+        <p class="question">Y a-t-il une news "Drapeau Rouge" sur cette paire demain ? (Fiche 5)</p>
+        <div class="btn-group">
+            <button onclick="stopAudit(&#39;NEWS ROUGE : Risque trop élevé. On attend la fin de l\&#39;impact.&#39;)">OUI</button>
+            <button onclick="nextStep(&#39;1&#39;, &#39;2&#39;)">NON</button>
+        </div>
+    </div>
+
+    <div class="step" id="step2">
+        <p class="question">Convergence confirmée W1 + D1 + 4H (MME 100) ?</p>
+        <div class="btn-group">
+            <button onclick="addPoint(&#39;convergence&#39;); nextStep(&#39;2&#39;, &#39;3&#39;)">OUI</button>
+            <button onclick="stopAudit(&#39;PAS DE CONVERGENCE : Flux instable. On ne trade JAMAIS contre le flux.&#39;)">NON</button>
+        </div>
+    </div>
+
+    <div class="step" id="step3">
+        <p class="question">Le prix est-il du bon côté du Pivot Mensuel ?</p>
+        <div class="btn-group">
+            <button onclick="addPoint(&#39;pivot&#39;); nextStep(&#39;3&#39;, &#39;4&#39;)">OUI</button>
+            <button onclick="stopAudit(&#39;PIVOT BLOQUANT : Niveau institutionnel proche.&#39;)">NON</button>
+        </div>
+    </div>
+
+    <div class="step" id="step4">
+        <p class="question">Quel est le signal d'entrée 4H ?</p>
+        <select id="signalSelect">
+            <option value="1">Cassure MME 100</option>
+            <option value="2">Rebond MME 100</option>
+            <option value="3">Croisement Stochastique</option>
+        </select>
+        <button class="btn-main" onclick="nextStep(&#39;4&#39;, &#39;5&#39;)">VALIDER LE SIGNAL</button>
+    </div>
+
+    <div class="step" id="step5">
+        <p class="question">Stochastique hors zone de saturation ?</p>
+        <div class="btn-group">
+            <button id="stochY" onclick="toggleSelection(&#39;stoch&#39;, true)">OUI</button>
+            <button id="stochN" onclick="toggleSelection(&#39;stoch&#39;, false)">NON</button>
+        </div>
+        <p class="question">La route est libre (pas d'obstacle proche) ?</p>
+        <div class="btn-group">
+            <button id="obsY" onclick="toggleSelection(&#39;obs&#39;, true)">OUI</button>
+            <button id="obsN" onclick="toggleSelection(&#39;obs&#39;, false)">NON</button>
+        </div>
+        <button class="btn-main" onclick="nextStep(&#39;5&#39;, &#39;6&#39;)">ÉTAPE SUIVANTE</button>
+    </div>
+
+    <div class="step" id="step6">
+        <p class="question">MME 100 inclinée (Flux fort) ?</p>
+        <div class="btn-group">
+            <button id="mmeY" onclick="toggleSelection(&#39;mme&#39;, true)">OUI</button>
+            <button id="mmeN" onclick="toggleSelection(&#39;mme&#39;, false)">NON</button>
+        </div>
+        <p class="question">Figure de bougie de confirmation ?</p>
+        <div class="btn-group">
+            <button id="candleY" onclick="toggleSelection(&#39;candle&#39;, true)">OUI</button>
+            <button id="candleN" onclick="toggleSelection(&#39;candle&#39;, false)">NON</button>
+        </div>
+        <p class="question">Figure de retournement (Double Top/Bottom...) ?</p>
+        <div class="btn-group">
+            <button id="revY" onclick="toggleSelection(&#39;rev&#39;, true)">OUI</button>
+            <button id="revN" onclick="toggleSelection(&#39;rev&#39;, false)">NON</button>
+        </div>
+        <button class="btn-main" onclick="finalizeAudit()">CALCULER LE VERDICT</button>
+    </div>
+
+    <div class="step" id="stepResult">
+        <h2 id="resultTitle">Verdict de l'Audit</h2>
+        <div class="stars" id="starContainer"></div>
+        <div class="verdict-box" id="verdictText"></div>
+        
+        <button class="btn-secondary" onclick="copyAuditToClipboard()">📄 COPIER LE JOURNAL (DATA PUR)</button>
+        <button class="btn-dark" id="btn-save-bb" onclick="saveToBlackBox()">💾 SAUVEGARDER DANS LA BLACK BOX</button>
+        
+        <button class="btn-main" onclick="location.reload()">NOUVEL AUDIT</button>
+    </div>
+</div>
+
+<div id="history-container" style="display: none;">
+    <h2>Black Box - Historique des Trades</h2>
+    
+    <div class="stats-board">
+        <div class="stat-item">
+            <div class="stat-label">Win Rate</div>
+            <div class="stat-value loss" id="win-rate-display">0%</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Total PnL</div>
+            <div class="stat-value loss" id="pnl-total-display">-30.00 €</div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Actif</th>
+                <th>Sens</th>
+                <th>Score</th>
+                <th>Résultat</th>
+            </tr>
+        </thead>
+        <tbody id="history-table-body"></tbody>
+    </table>
+    <button id="clear-history-btn" onclick="clearBlackBox()">🗑️ Vider l'historique</button>
+</div>
+
+<script>
+    // --- DISPLAY DYNAMIQUE DU RISQUE EN € ---
+    function updateRiskDisplay() {
+        const capital = parseFloat(document.getElementById('tradeCapital').value);
+        const risk = parseFloat(document.getElementById('tradeRisk').value);
+        const display = document.getElementById('risk-display');
+        
+        if (capital && risk) {
+            const riskEuro = (capital * (risk / 100)).toFixed(2);
+            display.innerText = `Cela représente ${riskEuro} € de risque.`;
+        } else {
+            display.innerText = "";
+        }
+    }
+
+    // --- AUDIT SYSTEM ---
+    let tradeData = { capital: 0, risk: 1, asset: '', direction: '', pe: 0, sl: 0, rr: 2, be: 0, tp: 0, lot: 0, score: 0 };
+    let choices = { convergence: false, pivot: false, stoch: null, obs: null, mme: null, candle: null, rev: null };
+    const totalSteps = 6;
+
+    function startAudit() {
+        tradeData.capital = parseFloat(document.getElementById('tradeCapital').value);
+        tradeData.risk = parseFloat(document.getElementById('tradeRisk').value);
+        tradeData.asset = document.getElementById('tradeAsset').value;
+        tradeData.direction = document.getElementById('tradeDirection').value;
+        tradeData.pe = parseFloat(document.getElementById('tradePE').value);
+        tradeData.sl = parseFloat(document.getElementById('tradeSL').value);
+        tradeData.rr = parseFloat(document.getElementById('tradeRR').value);
+
+        if(!tradeData.capital || !tradeData.asset || !tradeData.direction || isNaN(tradeData.pe) || isNaN(tradeData.sl)) {
+            alert("⚠️ Veuillez remplir tous les champs pour lancer l'Audit.");
+            return;
+        }
+        if(tradeData.direction === 'buy' && tradeData.sl >= tradeData.pe) {
+            alert("⚠️ Erreur : ACHAT = Stop Loss INFÉRIEUR au PE."); return;
+        }
+        if(tradeData.direction === 'sell' && tradeData.sl <= tradeData.pe) {
+            alert("⚠️ Erreur : VENTE = Stop Loss SUPÉRIEUR au PE."); return;
+        }
+        nextStep('Init', '1');
+    }
+
+    function nextStep(current, next) {
+        document.getElementById('step' + current).style.display = 'none';
+        const nextEl = document.getElementById(next === 'Result' ? 'stepResult' : 'step' + next);
+        nextEl.classList.add('active');
+        nextEl.style.display = 'block';
+        let progress = (next === 'Result') ? 100 : (next !== 'Init' ? (parseInt(next) / totalSteps) * 100 : 0);
+        document.getElementById('progress-fill').style.width = progress + '%';
+    }
+
+    function addPoint(key) { choices[key] = true; }
+    function toggleSelection(key, val) {
+        choices[key] = val;
+        const yesBtn = document.getElementById(key + 'Y');
+        const noBtn = document.getElementById(key + 'N');
+        if(val) { yesBtn.classList.add('selected', 'btn-yes'); noBtn.classList.remove('selected', 'btn-no'); } 
+        else { noBtn.classList.add('selected', 'btn-no'); yesBtn.classList.remove('selected', 'btn-yes'); }
+    }
+
+    function stopAudit(msg) {
+        document.querySelectorAll('.step').forEach(s => s.style.display = 'none');
+        const res = document.getElementById('stepResult');
+        res.style.display = 'block';
+        document.getElementById('resultTitle').innerHTML = "🛑 ACCÈS REFUSÉ";
+        document.getElementById('verdictText').innerHTML = `<p style="color:var(--danger); font-weight:bold; text-align:center;">${msg}</p>`;
+        document.getElementById('starContainer').innerHTML = "";
+        document.querySelector('.btn-secondary').style.display = 'none';
+        document.getElementById('btn-save-bb').style.display = 'none';
+    }
+
+    function formatPrice(num) { return parseFloat(num.toFixed(5)); }
+
+    function calculateLotSize() {
+        let diff = Math.abs(tradeData.pe - tradeData.sl);
+        let pips = (tradeData.asset === 'USDJPY') ? diff * 100 : (tradeData.asset === 'XAUUSD' ? diff * 10 : diff * 10000);
+        let riskAmount = tradeData.capital * (tradeData.risk / 100);
+        let lot = riskAmount / (pips * 10);
+        return Math.max(0.01, parseFloat(lot.toFixed(2))); 
+    }
+
+    function finalizeAudit() {
+        let score = 0;
+        if(choices.convergence) score += 2; 
+        if(choices.stoch === true) score += 1; 
+        if(choices.mme === true) score += 1; 
+        if(choices.rev === true) score += 1; 
+        tradeData.score = score;
+        nextStep('6', 'Result');
+
+        let stars = "";
+        for(let i=0; i<5; i++) stars += i < score ? "★" : "☆";
+        document.getElementById('starContainer').innerHTML = stars;
+
+        let riskDistance = Math.abs(tradeData.pe - tradeData.sl);
+        if (tradeData.direction === 'buy') {
+            tradeData.be = tradeData.pe + riskDistance;
+            tradeData.tp = tradeData.pe + (riskDistance * tradeData.rr);
+        } else {
+            tradeData.be = tradeData.pe - riskDistance;
+            tradeData.tp = tradeData.pe - (riskDistance * tradeData.rr);
+        }
+        tradeData.lot = calculateLotSize();
+
+        const box = document.getElementById('verdictText');
+        if(score >= 3) { 
+            box.innerHTML = `<h3 style="color:var(--success); text-align:center; margin-top:0;">AUDIT VALIDE (${score}/5)</h3>
+            <div class="risk-alert"><strong>Risque :</strong> ${(tradeData.capital * (tradeData.risk / 100)).toFixed(2)} € ➔ Position : <strong>${tradeData.lot} Lot(s)</strong>.</div>
+            <div class="data-grid">
+                <div class="data-box">Actif<span>${tradeData.asset}</span></div>
+                <div class="data-box">Sens<span>${tradeData.direction === 'buy' ? '<span style="color:var(--success)">ACHAT</span>' : '<span style="color:var(--danger)">VENTE</span>'}</span></div>
+                <div class="data-box">PE<span>${formatPrice(tradeData.pe)}</span></div>
+                <div class="data-box" style="border: 1px solid var(--danger);">SL<span>${formatPrice(tradeData.sl)}</span></div>
+                <div class="data-box" style="border: 1px solid var(--primary);">BE (1:1)<span>${formatPrice(tradeData.be)}</span></div>
+                <div class="data-box" style="border: 1px solid var(--success);">TP<span>${formatPrice(tradeData.tp)}</span></div>
+            </div>`;
+        } else {
+            box.innerHTML = `<h3 style="color:var(--danger); text-align:center; margin-top:0;">AUDIT NÉGATIF (${score}/5)</h3>
+            <p style="text-align:center;">Setup trop faible (${score}/5). On passe notre tour.</p>`;
+            document.querySelector('.btn-secondary').style.display = 'none';
+            document.getElementById('btn-save-bb').style.display = 'none'; 
+        }
+    }
+
+    function copyAuditToClipboard() {
+        const d = new Date();
+        const text = `Date: ${d.toLocaleDateString('fr-FR')}\nActif: ${tradeData.asset}\nSens: ${tradeData.direction === 'buy' ? 'ACHAT' : 'VENTE'}\nScore: ${tradeData.score}/5\nRisque: ${tradeData.risk}% (${(tradeData.capital * (tradeData.risk / 100)).toFixed(2)}€)\nLot: ${tradeData.lot}\nPE: ${formatPrice(tradeData.pe)}\nSL: ${formatPrice(tradeData.sl)}\nBE: ${formatPrice(tradeData.be)}\nTP: ${formatPrice(tradeData.tp)}`;
+        navigator.clipboard.writeText(text).then(() => alert('✅ Données copiées !'));
+    }
+
+    // --- BLACK BOX (INTERACTIVE LOGIC) ---
+    window.onload = function() { loadBlackBox(); };
+
+    function saveToBlackBox() {
+        const d = new Date();
+        const dateStr = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}`;
+        
+        const newTrade = {
+            id: Date.now(),
+            date: dateStr,
+            asset: tradeData.asset,
+            direction: tradeData.direction,
+            lot: tradeData.lot,
+            score: tradeData.score,
+            status: 'pending', // pending, win, loss, be
+            pnl: 0
+        };
+
+        let history = JSON.parse(localStorage.getItem('smtBlackBox')) || [];
+        history.unshift(newTrade);
+        localStorage.setItem('smtBlackBox', JSON.stringify(history));
+        
+        alert("⏳ Trade ouvert sauvegardé dans la Black Box !");
+        loadBlackBox();
+        document.getElementById('btn-save-bb').style.display = 'none';
+    }
+
+    function closeTrade(id, result) {
+        let amountStr = prompt(`Montant du PnL en € ?\n(Règle CEO : Si c'est un SL, on le transformera en négatif automatiquement)`);
+        if(amountStr === null || amountStr.trim() === '') return;
+        
+        let amount = parseFloat(amountStr.replace(',', '.'));
+        if(isNaN(amount)) { alert("Montant invalide."); return; }
+
+        // Sécurité anti-erreur
+        if(result === 'loss') amount = -Math.abs(amount);
+        if(result === 'win') amount = Math.abs(amount);
+        // Pour 'be', on garde ce qu'il a écrit (ex: -0.50 de frais de swap)
+
+        let history = JSON.parse(localStorage.getItem('smtBlackBox')) || [];
+        let tradeIndex = history.findIndex(t => t.id === id);
+        
+        if(tradeIndex > -1) {
+            history[tradeIndex].status = result;
+            history[tradeIndex].pnl = amount;
+            localStorage.setItem('smtBlackBox', JSON.stringify(history));
+            loadBlackBox();
+        }
+    }
+
+    function loadBlackBox() {
+        let history = JSON.parse(localStorage.getItem('smtBlackBox')) || [];
+        const container = document.getElementById('history-container');
+        const tbody = document.getElementById('history-table-body');
+        
+        tbody.innerHTML = ''; 
+        
+        let totalClosed = 0;
+        let totalWins = 0;
+        let totalPnl = 0;
+
+        if (history.length > 0) {
+            container.style.display = 'block'; 
+            
+            history.forEach(trade => {
+                let row = document.createElement('tr');
+                let dirClass = trade.direction === 'buy' ? 'buy-txt' : 'sell-txt';
+                let dirText = trade.direction === 'buy' ? 'ACHAT' : 'VENTE';
+                
+                let actionHTML = '';
+                
+                if(trade.status === 'pending') {
+                    actionHTML = `
+                        <div class="action-btns">
+                            <button class="btn-sm btn-tp" onclick="closeTrade(${trade.id}, 'win')">✅ TP</button>
+                            <button class="btn-sm btn-sl" onclick="closeTrade(${trade.id}, 'loss')">❌ SL</button>
+                            <button class="btn-sm btn-be" onclick="closeTrade(${trade.id}, 'be')">🛡️ BE</button>
+                        </div>
+                    `;
+                } else {
+                    totalClosed++;
+                    totalPnl += trade.pnl;
+                    
+                    let pnlColor = trade.pnl > 0 ? 'var(--success)' : (trade.pnl < 0 ? 'var(--danger)' : '#94a3b8');
+                    let pnlSign = trade.pnl > 0 ? '+' : '';
+                    let badge = '';
+                    
+                    if(trade.status === 'win') { badge = '✅ Gagné'; totalWins++; }
+                    if(trade.status === 'loss') { badge = '❌ Perdu'; }
+                    if(trade.status === 'be') { badge = '🛡️ BE'; }
+
+                    actionHTML = `
+                        <span style="font-size:0.8rem; color:#94a3b8">${badge}</span><br>
+                        <strong style="color:${pnlColor}">${pnlSign}${trade.pnl.toFixed(2)} €</strong>
+                    `;
+                }
+
+                row.innerHTML = `
+                    <td>${trade.date}</td>
+                    <td><strong>${trade.asset}</strong><br><span class="${dirClass}" style="font-size:0.75rem">${dirText}</span></td>
+                    <td>${trade.lot} L</td>
+                    <td>${trade.score} ★</td>
+                    <td>${actionHTML}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Mise à jour du Dashboard
+            let winRate = totalClosed > 0 ? Math.round((totalWins / totalClosed) * 100) : 0;
+            
+            let wrDisplay = document.getElementById('win-rate-display');
+            wrDisplay.innerText = `${winRate}%`;
+            wrDisplay.className = 'stat-value ' + (winRate >= 50 ? 'win' : (totalClosed > 0 ? 'loss' : ''));
+
+            let pnlDisplay = document.getElementById('pnl-total-display');
+            pnlDisplay.innerText = `${totalPnl > 0 ? '+' : ''}${totalPnl.toFixed(2)} €`;
+            pnlDisplay.className = 'stat-value ' + (totalPnl > 0 ? 'win' : (totalPnl < 0 ? 'loss' : ''));
+
+        } else {
+            container.style.display = 'none'; 
+        }
+    }
+
+    function clearBlackBox() {
+        if(confirm("⚠️ Es-tu sûr de vouloir vider TOUT l'historique et les statistiques ?")) {
+            localStorage.removeItem('smtBlackBox');
+            loadBlackBox();
+        }
+    }
+
+</script>
+
+
+</body></html>
