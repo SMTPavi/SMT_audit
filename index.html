@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<!-- saved from url=(0062)file:///C:/Travail/SMT%20Group/Trading_setup/audit_smt_v2.html -->
-<html lang="fr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMT Sentinel - Audit CEO Edition v6.0</title>
+    <title>SMT Sentinel - Audit CEO Edition v6.1</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -93,15 +93,6 @@
         .row-inputs { display: flex; gap: 10px; }
         .row-inputs > * { flex: 1; }
 
-        #risk-display {
-            font-size: 0.85rem;
-            color: #94a3b8;
-            margin-top: -10px;
-            margin-bottom: 15px;
-            text-align: right;
-            min-height: 18px;
-        }
-
         #result { text-align: center; }
         .stars { font-size: 2.5rem; color: var(--primary); margin: 1rem 0; text-align: center;}
         .verdict-box { padding: 1.5rem; border-radius: 0.5rem; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); margin-bottom: 1rem;}
@@ -167,7 +158,7 @@
         .btn-sm { padding: 4px 8px; font-size: 0.75rem; border-radius: 3px; cursor: pointer; border: none; font-weight: bold; }
         .btn-tp { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); }
         .btn-sl { background: rgba(244, 63, 94, 0.2); color: var(--danger); border: 1px solid var(--danger); }
-        .btn-be { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; border: 1px solid #94a3b8; }
+        .btn-be { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; border: 1px solid #94a3b8; width: 100%; margin-top: 5px; }
         .btn-tp:hover { background: var(--success); color: white; }
         .btn-sl:hover { background: var(--danger); color: white; }
         .btn-be:hover { background: #94a3b8; color: white; }
@@ -189,23 +180,19 @@
 
 <div id="app-container">
     <header>
-        <h1>SMT Sentinel v6.0</h1>
-        <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 5px;">AUDIT &amp; RISK MANAGEMENT CEO</p>
+        <h1>SMT Sentinel v6.1</h1>
+        <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 5px;">AUDIT & RISK MANAGEMENT CEO</p>
     </header>
 
     <div class="progress-bar"><div id="progress-fill"></div></div>
 
     <div class="step active" id="stepInit">
-        <p class="question">Capital &amp; Risque</p>
-        <div class="row-inputs">
-            <input type="number" id="tradeCapital" placeholder="Capital (€) ex: 3000" step="any" oninput="updateRiskDisplay()">
-            <input type="number" id="tradeRisk" placeholder="Risque (%) ex: 1" step="any" value="1" oninput="updateRiskDisplay()">
-        </div>
-        <div id="risk-display"></div>
-
+        <p class="question">Capital Disponible</p>
+        <input type="number" id="tradeCapital" placeholder="Capital (€) actuel" step="any" onchange="saveBaseCapital()">
+        
         <p class="question">Paramètres du Trade</p>
         <select id="tradeAsset">
-            <option value="" disabled="" selected="">Choisir l'Actif...</option>
+            <option value="" disabled selected>Choisir l'Actif...</option>
             <option value="EURUSD">EUR/USD</option>
             <option value="GBPUSD">GBP/USD</option>
             <option value="USDJPY">USD/JPY</option>
@@ -215,7 +202,7 @@
         </select>
 
         <select id="tradeDirection">
-            <option value="" disabled="" selected="">Sens du Trade...</option>
+            <option value="" disabled selected>Sens du Trade...</option>
             <option value="buy">ACHAT (Buy)</option>
             <option value="sell">VENTE (Sell)</option>
         </select>
@@ -226,7 +213,7 @@
         </div>
         
         <select id="tradeRR">
-            <option value="2" selected="">Objectif Ratio 1:2 (Standard)</option>
+            <option value="2" selected>Objectif Ratio 1:2 (Standard)</option>
             <option value="1">Ratio 1:1 (Sécurisation)</option>
             <option value="3">Ratio 1:3 (Agressif)</option>
         </select>
@@ -237,24 +224,24 @@
     <div class="step" id="step1">
         <p class="question">Y a-t-il une news "Drapeau Rouge" sur cette paire demain ? (Fiche 5)</p>
         <div class="btn-group">
-            <button onclick="stopAudit(&#39;NEWS ROUGE : Risque trop élevé. On attend la fin de l\&#39;impact.&#39;)">OUI</button>
-            <button onclick="nextStep(&#39;1&#39;, &#39;2&#39;)">NON</button>
+            <button onclick="stopAudit('NEWS ROUGE : Risque trop élevé. On attend la fin de l\'impact.')">OUI</button>
+            <button onclick="nextStep('1', '2')">NON</button>
         </div>
     </div>
 
     <div class="step" id="step2">
         <p class="question">Convergence confirmée W1 + D1 + 4H (MME 100) ?</p>
         <div class="btn-group">
-            <button onclick="addPoint(&#39;convergence&#39;); nextStep(&#39;2&#39;, &#39;3&#39;)">OUI</button>
-            <button onclick="stopAudit(&#39;PAS DE CONVERGENCE : Flux instable. On ne trade JAMAIS contre le flux.&#39;)">NON</button>
+            <button onclick="addPoint('convergence'); nextStep('2', '3')">OUI</button>
+            <button onclick="stopAudit('PAS DE CONVERGENCE : Flux instable. On ne trade JAMAIS contre le flux.')">NON</button>
         </div>
     </div>
 
     <div class="step" id="step3">
         <p class="question">Le prix est-il du bon côté du Pivot Mensuel ?</p>
         <div class="btn-group">
-            <button onclick="addPoint(&#39;pivot&#39;); nextStep(&#39;3&#39;, &#39;4&#39;)">OUI</button>
-            <button onclick="stopAudit(&#39;PIVOT BLOQUANT : Niveau institutionnel proche.&#39;)">NON</button>
+            <button onclick="addPoint('pivot'); nextStep('3', '4')">OUI</button>
+            <button onclick="stopAudit('PIVOT BLOQUANT : Niveau institutionnel proche.')">NON</button>
         </div>
     </div>
 
@@ -265,38 +252,38 @@
             <option value="2">Rebond MME 100</option>
             <option value="3">Croisement Stochastique</option>
         </select>
-        <button class="btn-main" onclick="nextStep(&#39;4&#39;, &#39;5&#39;)">VALIDER LE SIGNAL</button>
+        <button class="btn-main" onclick="nextStep('4', '5')">VALIDER LE SIGNAL</button>
     </div>
 
     <div class="step" id="step5">
         <p class="question">Stochastique hors zone de saturation ?</p>
         <div class="btn-group">
-            <button id="stochY" onclick="toggleSelection(&#39;stoch&#39;, true)">OUI</button>
-            <button id="stochN" onclick="toggleSelection(&#39;stoch&#39;, false)">NON</button>
+            <button id="stochY" onclick="toggleSelection('stoch', true)">OUI</button>
+            <button id="stochN" onclick="toggleSelection('stoch', false)">NON</button>
         </div>
         <p class="question">La route est libre (pas d'obstacle proche) ?</p>
         <div class="btn-group">
-            <button id="obsY" onclick="toggleSelection(&#39;obs&#39;, true)">OUI</button>
-            <button id="obsN" onclick="toggleSelection(&#39;obs&#39;, false)">NON</button>
+            <button id="obsY" onclick="toggleSelection('obs', true)">OUI</button>
+            <button id="obsN" onclick="toggleSelection('obs', false)">NON</button>
         </div>
-        <button class="btn-main" onclick="nextStep(&#39;5&#39;, &#39;6&#39;)">ÉTAPE SUIVANTE</button>
+        <button class="btn-main" onclick="nextStep('5', '6')">ÉTAPE SUIVANTE</button>
     </div>
 
     <div class="step" id="step6">
         <p class="question">MME 100 inclinée (Flux fort) ?</p>
         <div class="btn-group">
-            <button id="mmeY" onclick="toggleSelection(&#39;mme&#39;, true)">OUI</button>
-            <button id="mmeN" onclick="toggleSelection(&#39;mme&#39;, false)">NON</button>
+            <button id="mmeY" onclick="toggleSelection('mme', true)">OUI</button>
+            <button id="mmeN" onclick="toggleSelection('mme', false)">NON</button>
         </div>
         <p class="question">Figure de bougie de confirmation ?</p>
         <div class="btn-group">
-            <button id="candleY" onclick="toggleSelection(&#39;candle&#39;, true)">OUI</button>
-            <button id="candleN" onclick="toggleSelection(&#39;candle&#39;, false)">NON</button>
+            <button id="candleY" onclick="toggleSelection('candle', true)">OUI</button>
+            <button id="candleN" onclick="toggleSelection('candle', false)">NON</button>
         </div>
         <p class="question">Figure de retournement (Double Top/Bottom...) ?</p>
         <div class="btn-group">
-            <button id="revY" onclick="toggleSelection(&#39;rev&#39;, true)">OUI</button>
-            <button id="revN" onclick="toggleSelection(&#39;rev&#39;, false)">NON</button>
+            <button id="revY" onclick="toggleSelection('rev', true)">OUI</button>
+            <button id="revN" onclick="toggleSelection('rev', false)">NON</button>
         </div>
         <button class="btn-main" onclick="finalizeAudit()">CALCULER LE VERDICT</button>
     </div>
@@ -313,17 +300,21 @@
     </div>
 </div>
 
-<div id="history-container" style="display: none;">
+<div id="history-container">
     <h2>Black Box - Historique des Trades</h2>
     
     <div class="stats-board">
         <div class="stat-item">
+            <div class="stat-label">Capital Actuel</div>
+            <div class="stat-value" id="capital-actuel-display" style="color:var(--text);">0.00 €</div>
+        </div>
+        <div class="stat-item">
             <div class="stat-label">Win Rate</div>
-            <div class="stat-value loss" id="win-rate-display">0%</div>
+            <div class="stat-value" id="win-rate-display">0%</div>
         </div>
         <div class="stat-item">
             <div class="stat-label">Total PnL</div>
-            <div class="stat-value loss" id="pnl-total-display">-30.00 €</div>
+            <div class="stat-value" id="pnl-total-display">0.00 €</div>
         </div>
     </div>
 
@@ -332,28 +323,41 @@
             <tr>
                 <th>Date</th>
                 <th>Actif</th>
-                <th>Sens</th>
+                <th>Lot</th>
                 <th>Score</th>
                 <th>Résultat</th>
             </tr>
         </thead>
-        <tbody id="history-table-body"></tbody>
+        <tbody id="history-table-body">
+            </tbody>
     </table>
     <button id="clear-history-btn" onclick="clearBlackBox()">🗑️ Vider l'historique</button>
 </div>
 
 <script>
-    // --- DISPLAY DYNAMIQUE DU RISQUE EN € ---
-    function updateRiskDisplay() {
-        const capital = parseFloat(document.getElementById('tradeCapital').value);
-        const risk = parseFloat(document.getElementById('tradeRisk').value);
-        const display = document.getElementById('risk-display');
+    // --- GESTION DU CAPITAL ---
+    window.onload = function() { 
+        loadBlackBox(); 
         
-        if (capital && risk) {
-            const riskEuro = (capital * (risk / 100)).toFixed(2);
-            display.innerText = `Cela représente ${riskEuro} € de risque.`;
-        } else {
-            display.innerText = "";
+        // Charger le capital sauvegardé
+        let savedCap = localStorage.getItem('smtBaseCapital');
+        if(savedCap) {
+            document.getElementById('tradeCapital').value = parseFloat(savedCap).toFixed(2);
+        }
+    };
+
+    function saveBaseCapital() {
+        let cap = document.getElementById('tradeCapital').value;
+        if(cap) localStorage.setItem('smtBaseCapital', cap);
+        loadBlackBox(); // Met à jour l'affichage en bas
+    }
+
+    function updateCapitalOnClose(pnl) {
+        let cap = parseFloat(localStorage.getItem('smtBaseCapital')) || 0;
+        if(cap > 0) {
+            cap += pnl;
+            localStorage.setItem('smtBaseCapital', cap);
+            document.getElementById('tradeCapital').value = cap.toFixed(2);
         }
     }
 
@@ -364,7 +368,7 @@
 
     function startAudit() {
         tradeData.capital = parseFloat(document.getElementById('tradeCapital').value);
-        tradeData.risk = parseFloat(document.getElementById('tradeRisk').value);
+        tradeData.risk = 1; // RISQUE FIXÉ À 1% EN ARRIÈRE-PLAN
         tradeData.asset = document.getElementById('tradeAsset').value;
         tradeData.direction = document.getElementById('tradeDirection').value;
         tradeData.pe = parseFloat(document.getElementById('tradePE').value);
@@ -381,6 +385,8 @@
         if(tradeData.direction === 'sell' && tradeData.sl <= tradeData.pe) {
             alert("⚠️ Erreur : VENTE = Stop Loss SUPÉRIEUR au PE."); return;
         }
+        
+        saveBaseCapital(); // Sauvegarde le capital tapé
         nextStep('Init', '1');
     }
 
@@ -449,7 +455,7 @@
         const box = document.getElementById('verdictText');
         if(score >= 3) { 
             box.innerHTML = `<h3 style="color:var(--success); text-align:center; margin-top:0;">AUDIT VALIDE (${score}/5)</h3>
-            <div class="risk-alert"><strong>Risque :</strong> ${(tradeData.capital * (tradeData.risk / 100)).toFixed(2)} € ➔ Position : <strong>${tradeData.lot} Lot(s)</strong>.</div>
+            <div class="risk-alert"><strong>Risque (1%) :</strong> ${(tradeData.capital * 0.01).toFixed(2)} € ➔ Position : <strong>${tradeData.lot} Lot(s)</strong>.</div>
             <div class="data-grid">
                 <div class="data-box">Actif<span>${tradeData.asset}</span></div>
                 <div class="data-box">Sens<span>${tradeData.direction === 'buy' ? '<span style="color:var(--success)">ACHAT</span>' : '<span style="color:var(--danger)">VENTE</span>'}</span></div>
@@ -468,13 +474,11 @@
 
     function copyAuditToClipboard() {
         const d = new Date();
-        const text = `Date: ${d.toLocaleDateString('fr-FR')}\nActif: ${tradeData.asset}\nSens: ${tradeData.direction === 'buy' ? 'ACHAT' : 'VENTE'}\nScore: ${tradeData.score}/5\nRisque: ${tradeData.risk}% (${(tradeData.capital * (tradeData.risk / 100)).toFixed(2)}€)\nLot: ${tradeData.lot}\nPE: ${formatPrice(tradeData.pe)}\nSL: ${formatPrice(tradeData.sl)}\nBE: ${formatPrice(tradeData.be)}\nTP: ${formatPrice(tradeData.tp)}`;
+        const text = `Date: ${d.toLocaleDateString('fr-FR')}\nActif: ${tradeData.asset}\nSens: ${tradeData.direction === 'buy' ? 'ACHAT' : 'VENTE'}\nScore: ${tradeData.score}/5\nCapital: ${tradeData.capital}€\nLot (1%): ${tradeData.lot}\nPE: ${formatPrice(tradeData.pe)}\nSL: ${formatPrice(tradeData.sl)}\nBE: ${formatPrice(tradeData.be)}\nTP: ${formatPrice(tradeData.tp)}`;
         navigator.clipboard.writeText(text).then(() => alert('✅ Données copiées !'));
     }
 
     // --- BLACK BOX (INTERACTIVE LOGIC) ---
-    window.onload = function() { loadBlackBox(); };
-
     function saveToBlackBox() {
         const d = new Date();
         const dateStr = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}`;
@@ -500,16 +504,16 @@
     }
 
     function closeTrade(id, result) {
-        let amountStr = prompt(`Montant du PnL en € ?\n(Règle CEO : Si c'est un SL, on le transformera en négatif automatiquement)`);
+        let amountStr = prompt(`Montant du PnL en € ?\n(Saisir le profit exact ou la perte avec un '-')`);
         if(amountStr === null || amountStr.trim() === '') return;
         
         let amount = parseFloat(amountStr.replace(',', '.'));
         if(isNaN(amount)) { alert("Montant invalide."); return; }
 
-        // Sécurité anti-erreur
+        // Sécurité sign (force le négatif si SL, force le positif si TP)
         if(result === 'loss') amount = -Math.abs(amount);
         if(result === 'win') amount = Math.abs(amount);
-        // Pour 'be', on garde ce qu'il a écrit (ex: -0.50 de frais de swap)
+        // Pour 'be' (Sortie Manuelle), on garde exactement le signe tapé par l'utilisateur.
 
         let history = JSON.parse(localStorage.getItem('smtBlackBox')) || [];
         let tradeIndex = history.findIndex(t => t.id === id);
@@ -518,6 +522,10 @@
             history[tradeIndex].status = result;
             history[tradeIndex].pnl = amount;
             localStorage.setItem('smtBlackBox', JSON.stringify(history));
+            
+            // Actualise le capital de départ pour le prochain trade !
+            updateCapitalOnClose(amount);
+            
             loadBlackBox();
         }
     }
@@ -548,7 +556,7 @@
                         <div class="action-btns">
                             <button class="btn-sm btn-tp" onclick="closeTrade(${trade.id}, 'win')">✅ TP</button>
                             <button class="btn-sm btn-sl" onclick="closeTrade(${trade.id}, 'loss')">❌ SL</button>
-                            <button class="btn-sm btn-be" onclick="closeTrade(${trade.id}, 'be')">🛡️ BE</button>
+                            <button class="btn-sm btn-be" onclick="closeTrade(${trade.id}, 'be')">🛡️ Sortie Manuelle / BE</button>
                         </div>
                     `;
                 } else {
@@ -559,9 +567,22 @@
                     let pnlSign = trade.pnl > 0 ? '+' : '';
                     let badge = '';
                     
-                    if(trade.status === 'win') { badge = '✅ Gagné'; totalWins++; }
-                    if(trade.status === 'loss') { badge = '❌ Perdu'; }
-                    if(trade.status === 'be') { badge = '🛡️ BE'; }
+                    // NOUVELLE LOGIQUE WIN RATE ET BADGES
+                    if(trade.status === 'win') { 
+                        badge = '✅ TP Touché'; 
+                        totalWins++; 
+                    } else if(trade.status === 'loss') { 
+                        badge = '❌ SL Touché'; 
+                    } else if(trade.status === 'be') { 
+                        if(trade.pnl > 0) {
+                            badge = '✅ Coupé (Profit)'; 
+                            totalWins++; // COMPTE COMME UNE VICTOIRE
+                        } else if(trade.pnl < 0) {
+                            badge = '❌ Coupé (Perte)';
+                        } else {
+                            badge = '🛡️ Break-Even';
+                        }
+                    }
 
                     actionHTML = `
                         <span style="font-size:0.8rem; color:#94a3b8">${badge}</span><br>
@@ -589,20 +610,26 @@
             let pnlDisplay = document.getElementById('pnl-total-display');
             pnlDisplay.innerText = `${totalPnl > 0 ? '+' : ''}${totalPnl.toFixed(2)} €`;
             pnlDisplay.className = 'stat-value ' + (totalPnl > 0 ? 'win' : (totalPnl < 0 ? 'loss' : ''));
+            
+            // Mise à jour de l'affichage du Capital Actuel
+            let baseCap = parseFloat(localStorage.getItem('smtBaseCapital')) || 0;
+            document.getElementById('capital-actuel-display').innerText = baseCap.toFixed(2) + ' €';
 
         } else {
             container.style.display = 'none'; 
+            document.getElementById('capital-actuel-display').innerText = (parseFloat(localStorage.getItem('smtBaseCapital')) || 0).toFixed(2) + ' €';
         }
     }
 
     function clearBlackBox() {
         if(confirm("⚠️ Es-tu sûr de vouloir vider TOUT l'historique et les statistiques ?")) {
             localStorage.removeItem('smtBlackBox');
+            // Optionnel: on peut garder ou reset le capital. Ici on vide juste l'historique des trades.
             loadBlackBox();
         }
     }
 
 </script>
 
-
-</body></html>
+</body>
+</html>
